@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <title>SIG Tenaga Kesehatan Kabupaten Ponorogo</title>
+
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- QGIS2Web Resources -->
+    <link rel="stylesheet" href="resources/ol.css" />
+    <link rel="stylesheet" href="resources/fontawesome-all.min.css" />
+    <link
+      href="resources/photon-geocoder-autocomplete.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="resources/ol-layerswitcher.css" />
+    <link rel="stylesheet" href="resources/qgis2web.css" />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="tooplate-eco-lume.css" />
+
+    <style>
+      /* Additional styles for map integration */
+      .map-section {
+        padding: 80px 40px;
+        background: rgba(0, 255, 136, 0.03);
+      }
+
+      #map {
+        width: 100%;
+        height: 100%;
+      }
+
+      .map-container {
+        width: 100%;
+        height: auto;
+        min-height: 600px;
+      }
+
+      .map-info {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(0, 255, 136, 0.2);
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 20px;
+        backdrop-filter: blur(20px);
+      }
+
+      .data-section {
+        padding: 80px 40px;
+      }
+
+      .data-table-container {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(0, 255, 136, 0.2);
+        border-radius: 24px;
+        padding: 24px;
+        backdrop-filter: blur(20px);
+        overflow-x: auto;
+      }
+
+      .table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 15px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 1000px;
+      }
+
+      th,
+      td {
+        padding: 12px 16px;
+        text-align: left;
+        border-bottom: 1px solid rgba(0, 255, 136, 0.2);
+        color: rgba(255, 255, 255, 0.8);
+      }
+
+      th {
+        background: rgba(0, 255, 136, 0.1);
+        color: var(--primary-green);
+        font-weight: 600;
+      }
+
+      tr:hover {
+        background: rgba(0, 255, 136, 0.05);
+      }
+
+      /* Custom popup styles to match theme */
+      .ol-popup {
+        background: rgba(10, 26, 10, 0.95) !important;
+        border: 2px solid var(--primary-green) !important;
+        border-radius: 16px !important;
+        backdrop-filter: blur(20px);
+        color: white;
+      }
+
+      .ol-popup-closer {
+        color: var(--primary-green) !important;
+        background: rgba(255, 255, 255, 0.1) !important;
+      }
+
+      .ol-popup-closer:hover {
+        background: var(--primary-green) !important;
+        color: var(--deep-forest) !important;
+      }
+
+      /* QGIS Controls Styling */
+      .ol-control {
+        background: rgba(10, 26, 10, 0.8) !important;
+        border-radius: 12px !important;
+      }
+
+      .ol-control button {
+        background: rgba(0, 255, 136, 0.2) !important;
+        color: var(--primary-green) !important;
+        border-radius: 8px !important;
+      }
+
+      .ol-control button:hover {
+        background: var(--primary-green) !important;
+        color: var(--deep-forest) !important;
+      }
+
+      /* Map iframe container */
+      .map-frame-container {
+        position: relative;
+        width: 100%;
+        height: 600px;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 2px solid rgba(0, 255, 136, 0.2);
+      }
+
+      .map-frame {
+        width: 100%;
+        height: 100%;
+        border: none;
+      }
+
+      /* Health Stats */
+      .health-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 15px;
+        margin-bottom: 30px;
+      }
+
+      .health-stat-item {
+        background: rgba(0, 255, 136, 0.1);
+        border: 1px solid rgba(0, 255, 136, 0.2);
+        border-radius: 12px;
+        padding: 15px;
+        text-align: center;
+        backdrop-filter: blur(10px);
+        transition: transform 0.3s ease;
+      }
+
+      .health-stat-item:hover {
+        transform: translateY(-5px);
+        background: rgba(0, 255, 136, 0.15);
+      }
+
+      .health-stat-item h4 {
+        color: var(--primary-green);
+        font-size: 24px;
+        margin-bottom: 5px;
+        font-weight: 600;
+      }
+
+      .health-stat-item p {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 14px;
+        margin: 0;
+      }
+
+      /* Category colors for table */
+      .category-medis {
+        color: #00ff88;
+      }
+      .category-perawat {
+        color: #4dabf7;
+      }
+      .category-bidan {
+        color: #ff6b6b;
+      }
+      .category-farmasi {
+        color: #ffd93d;
+      }
+      .category-kesmas {
+        color: #6bcf7f;
+      }
+      .category-gizi {
+        color: #ff8b3d;
+      }
+
+      /* Stats section */
+      .stats-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .stat-item {
+        background: rgba(0, 255, 136, 0.1);
+        border: 1px solid rgba(0, 255, 136, 0.2);
+        border-radius: 16px;
+        padding: 25px;
+        text-align: center;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+      }
+
+      .stat-item:hover {
+        transform: translateY(-5px);
+        background: rgba(0, 255, 136, 0.15);
+        border-color: rgba(0, 255, 136, 0.3);
+      }
+
+      .stat-item h3 {
+        color: var(--primary-green);
+        font-size: 36px;
+        margin-bottom: 10px;
+        font-weight: 700;
+      }
+
+      .stat-item p {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 16px;
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Background Elements -->
+    <div class="bio-bg"></div>
+    <div class="organic-shapes">
+      <div class="leaf leaf-1"></div>
+      <div class="leaf leaf-2"></div>
+      <div class="leaf leaf-3"></div>
+    </div>
+    <div class="particle-system" id="particleSystem"></div>
+
+    <!-- Navigation -->
+    <nav id="navbar">
+      <div class="nav-container">
+        <a href="#" class="logo">
+          <div class="logo-icon"></div>
+          <div class="logo-text">SIG Ponorogo</div>
+        </a>
+
+        <div class="menu-toggle" id="menuToggle">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+
+        <ul class="nav-menu" id="navMenu">
+          <li><a href="#home" class="nav-link active">Beranda</a></li>
+          <li><a href="#map-section" class="nav-link">Peta Interaktif</a></li>
+          <li>
+            <a href="#data-section" class="nav-link">Data Tenaga Kesehatan</a>
+          </li>
+          <li><a href="#stats-section" class="nav-link">Statistik</a></li>
+          <li><a href="#contact" class="nav-link">Kontak</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+      <div class="hero-content">
+        <div class="hero-text">
+          <h1>Sistem Informasi Tenaga Kesehatan Kabupaten Ponorogo 2024</h1>
+          <p>
+            Visualisasi data tenaga kesehatan berdasarkan kecamatan di Kabupaten
+            Ponorogo Tahun 2024. Menampilkan informasi lengkap perawat, bidan,
+            tenaga kefarmasian, dan berbagai kategori tenaga kesehatan lainnya.
+          </p>
+          <div class="hero-buttons">
+            <a href="#map-section" class="btn btn-primary">
+              <span>🌍</span> Jelajahi Peta
+            </a>
+            <a href="#data-section" class="btn btn-secondary">
+              <span>📊</span> Lihat Data
+            </a>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <div class="bio-sphere">
+            <div class="rotating-text">
+              <div class="text-circle active">Data Tenaga Kesehatan</div>
+              <div class="text-circle">Visualisasi Interaktif</div>
+              <div class="text-circle">Analisis Spasial</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Map Section -->
+    <section class="map-section" id="map-section">
+      <h2 class="section-title">Peta Interaktif Tenaga Kesehatan Ponorogo</h2>
+      <div class="map-info">
+        <p>
+          <strong>🏥 Panduan Penggunaan:</strong> Klik pada area kecamatan di
+          peta untuk melihat informasi detail tenaga kesehatan. Gunakan kontrol
+          zoom dan pan untuk menavigasi peta.
+        </p>
+      </div>
+      <div class="map-container">
+        <div class="map-frame-container">
+          <iframe
+            id="map-frame"
+            class="map-frame"
+            src="peta/index.html"
+            frameborder="0"
+            title="Peta Tenaga Kesehatan Ponorogo 2024"
+          ></iframe>
+        </div>
+      </div>
+    </section>
+
+    <!-- Statistics Section -->
+    <section class="stats" id="stats-section">
+      <div class="stats-container">
+        <div class="stat-item">
+          <h3 id="total-perawat">1,890</h3>
+          <p>Total Perawat</p>
+        </div>
+        <div class="stat-item">
+          <h3 id="total-bidan">981</h3>
+          <p>Total Bidan</p>
+        </div>
+        <div class="stat-item">
+          <h3 id="total-farmasi">632</h3>
+          <p>Tenaga Kefarmasian</p>
+        </div>
+        <div class="stat-item">
+          <h3 id="total-medis">123</h3>
+          <p>Tenaga Medis</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Data Table Section -->
+    <section class="data-section" id="data-section">
+      <h2 class="section-title">
+        Data Lengkap Tenaga Kesehatan per Kecamatan 2024
+      </h2>
+
+      <div class="data-table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Kecamatan</th>
+              <th class="category-perawat">Tenaga Kesehatan - Perawat</th>
+              <th class="category-bidan">Tenaga Kesehatan - Bidan</th>
+              <th class="category-gizi">Tenaga Kesehatan - Tenaga Gizi</th>
+              <th class="category-medis">Jumlah Tenaga Medis</th>
+            </tr>
+          </thead>
+          <tbody id="health-table-body">
+            <!-- Data akan diisi oleh JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact" id="contact">
+      <div class="contact-container">
+        <div class="contact-form">
+          <h3>Hubungi Kami</h3>
+          <form id="contactForm">
+            <div class="form-group">
+              <label for="name">Nama Lengkap</label>
+              <input type="text" id="name" name="name" required />
+            </div>
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" required />
+            </div>
+            <div class="form-group">
+              <label for="message">Pesan</label>
+              <textarea id="message" name="message" required></textarea>
+            </div>
+            <button type="submit" class="submit-btn">Kirim Pesan</button>
+          </form>
+        </div>
+        <div class="contact-info">
+          <h3>Informasi Kontak</h3>
+          <div class="contact-item">
+            <div class="contact-icon">📧</div>
+            <div class="contact-details">
+              <h4>Email</h4>
+              <p>info@sigponorogo.id</p>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="contact-icon">📱</div>
+            <div class="contact-details">
+              <h4>Telepon</h4>
+              <p>(0352) 481123</p>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="contact-icon">📍</div>
+            <div class="contact-details">
+              <h4>Alamat</h4>
+              <p>Jl. Batoro Katong No. 1, Ponorogo</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <div class="footer-content">
+        <div class="footer-brand">
+          <h3>SIG Ponorogo</h3>
+          <p>
+            Sistem Informasi Geografis untuk memvisualisasikan data tenaga
+            kesehatan Kabupaten Ponorogo secara interaktif dan informatif.
+          </p>
+          <div class="social-links">
+            <a href="#" class="social-link">📘</a>
+            <a href="#" class="social-link">🐦</a>
+            <a href="#" class="social-link">📷</a>
+            <a href="#" class="social-link">💼</a>
+          </div>
+        </div>
+        <div class="footer-section">
+          <h4>Navigasi</h4>
+          <ul>
+            <li><a href="#home">Beranda</a></li>
+            <li><a href="#map-section">Peta Interaktif</a></li>
+            <li><a href="#data-section">Data Tenaga Kesehatan</a></li>
+            <li><a href="#stats-section">Statistik</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Sumber Data</h4>
+          <ul>
+            <li>Data Tenaga Kesehatan 2024</li>
+            <li>Dinas Kesehatan Kabupaten Ponorogo</li>
+            <li>Badan Pusat Statistik</li>
+            <li>Pemerintah Kabupaten Ponorogo</li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Dukungan</h4>
+          <ul>
+            <li><a href="#">Pusat Bantuan</a></li>
+            <li><a href="#">Dokumentasi</a></li>
+            <li><a href="#">Status Sistem</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>
+          &copy; 2024 Sistem Informasi Geografis Kabupaten Ponorogo. Semua hak
+          dilindungi.
+        </p>
+        <a href="#">Kebijakan Privasi</a>
+        <a href="#">Syarat Layanan</a>
+      </div>
+    </footer>
+
+    <!-- Scripts dari export QGIS -->
+    <script src="resources/qgis2web_expressions.js"></script>
+    <script src="resources/functions.js"></script>
+    <script src="resources/ol.js"></script>
+    <script src="resources/ol-layerswitcher.js"></script>
+    <script src="resources/photon-geocoder-autocomplete.min.js"></script>
+
+    <!-- Layer Scripts dari export QGIS -->
+    <script src="layers/layers.js" type="text/javascript"></script>
+
+    <!-- Additional Scripts dari export QGIS -->
+    <script src="resources/Autolinker.min.js"></script>
+    <script src="resources/qgis2web.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script src="tooplate-eco-scripts.js"></script>
+
+    <!-- Integration Script -->
+    <script>
+      // Data tenaga kesehatan 2024
+      const healthData2024 = [
+        {
+          kecamatan: "Ngrayun",
+          perawat: 23,
+          bidan: 15,
+          farmasi: 2,
+          kesmas: 2,
+          kesling: 1,
+          gizi: 2,
+          medis: 1,
+          psikologi: null,
+          fisik: null,
+          keteknisan: 1,
+          biomedika: 2,
+          tradisional: null,
+        },
+        {
+          kecamatan: "Slahung",
+          perawat: 38,
+          bidan: 36,
+          farmasi: 3,
+          kesmas: 4,
+          kesling: 1,
+          gizi: 2,
+          medis: 1,
+          psikologi: null,
+          fisik: null,
+          keteknisan: 1,
+          biomedika: 3,
+          tradisional: null,
+        },
+        {
+          kecamatan: "Bungkal",
+          perawat: 17,
+          bidan: 21,
+          farmasi: 2,
+          kesmas: 2,
+          kesling: 1,
+          gizi: 1,
+          medis: 1,
+          psikologi: null,
+          fisik: null,
+          keteknisan: 1,
+          biomedika: 2,
+          tradisional: null,
+        },
+        {
+          kecamatan: "Sambit",
+          perawat: 26,
+          bidan: 21,
+          farmasi: 3,
+          kesmas: 3,
+          kesling: 2,
+          gizi: 2,
+          medis: 2,
+          psikologi: null,
+          fisik: null,
+          keteknisan: 2,
+          biomedika: 2,
+          tradisional: null,
+        },
+        {
+          kecamatan: "Sawoo",
+          perawat: 29,
+          bidan: 28,
+          farmasi: 4,
+          kesmas: 2,
+          kesling: 2,
+          gizi: 3,
+          medis: 2,
+          psikologi: null,
+          fisik: null,
+          keteknisan: 2,
+          biomedika: 3,
+          tradisional: null,
+        },
+        {
+          kecamatan: "Sooko",
+          perawat: 18,
+          bidan: 11,
+          farmasi: 3,
+          kesmas: 1,
+          kesling: 1,
+          gizi: 1,
+          medis: 1,
+          psikologi: null,
+          fisik: null,
+          keteknisan: 1,
+          biomedika: 1,
+          tradisional: null,
+        },
+        {
+          kecamatan: "Pudak",
+          perawat: 12,
+          bidan: 10,
+          farmasi: 2,
+          kesmas: 2,
+          kesling: null,
+          gizi: null,
+          medis: null,
+          psikologi: null,
+          fisik: null,
+          keteknisan: null,
+          biomedika: 2,
+          tradisional: null,
+        },
+        {
+          kecamatan: "Pulung",
+          perawat: 30,
+          bidan: 27,
+          farmasi: 2,
+          kesmas: 3,
+          kesling: 1,
+          gizi: 1,
+          medis: 1,
+          psikologi: null,
+          fisik: null,
+          keteknisan: 1,
+          biomedika: 2,
+          tradisional: null,
+        },
+        {
+          kecamatan: "Mlarak",
+          perawat: 89,
+          bidan: 26,
+          farmasi: 8,
+          kesmas: null,
+          kesling: 2,
+          gizi: 2,
+          medis: 4,
+          psikologi: null,
+          fisik: 1,
+          keteknisan: 4,
+          biomedika: 11,
+          tradisional: null,
+        },
+        {
+          kecamatan: "Siman",
+          perawat: 20,
+          bidan: 25,
+          farmasi: 4,
+          kesmas: 4,
+          kesling: 2,
+          gizi: 2,
+          medis: 2,
+          psikologi: null,
+          fisik: null,
+          keteknisan: 2,
+          biomedika: 2,
+          tradisional: null,
+        },
+        {
+          kecamatan: "Jetis",
+          perawat: 25,
+          bidan: 15,
+          farmasi: null,
+          kesmas: 3,
+          kesling: 1,
+          gizi: 1,
+          medis: 1,
+          psikologi: null,
+          fisik: null,
+          keteknisan: 1,
+          biomedika: 1,
+          tradisional: null,
+        },
+        {
+          kecamatan: "Balong",
+          perawat: 19,
+          bidan: 27,
+          farmasi: 2,
+          kesmas: 3,
+          kesling: 1,
+          gizi: 2,
+          medis: 1,
+          psikologi: null,
+          fisik: null,
+          keteknisan: 1,
+          biomedika: 1,
+          tradisional: null,
+        },
+        {
+          kecamatan: "Kauman",
+          perawat: 48,
+          bidan: 40,
+          farmasi: 15,
+          kesmas: 6,
+          kesling: 4,
+          gizi: 6,
+          medis: 5,
+          psikologi: null,
+          fisik: 1,
+          keteknisan: 5,
+          biomedika: 7,
+          tradisional: null,
+        },
+        {
+          kecamatan: "Jambon",
+          perawat: 23,
+          bidan: 26,
+          farmasi: 1,
+          kesmas: 1,
+          kesling: 1,
+          gizi: 1,
+          medis: 1,
+          psikologi: null,
+          fisik: null,
+          keteknisan: 1,
+          biomedika: 1,
+          tradisional: null,
+        },
+        {
+          kecamatan: "Badegan",
+          perawat: 22,
+          bidan: 17,
+          farmasi: 2,
+          kesmas: 2,
+          kesling: 1,
+          gizi: 1,
+          medis: 2,
+          psikologi: null,
+          fisik: 1,
+          keteknisan: 2,
+          biomedika: 1,
+          tradisional: null,
+        },
+        {
+          kecamatan: "Sampung",
+          perawat: 18,
+          bidan: 20,
+          farmasi: 4,
+          kesmas: 3,
+          kesling: 3,
+          gizi: 1,
+          medis: 3,
+          psikologi: null,
+          fisik: null,
+          keteknisan: 3,
+          biomedika: 1,
+          tradisional: null,
+        },
+        {
+          kecamatan: "Sukorejo",
+          perawat: 15,
+          bidan: 21,
+          farmasi: 2,
+          kesmas: 2,
+          kesling: 1,
+          gizi: 1,
+          medis: 1,
+          psikologi: null,
+          fisik: null,
+          keteknisan: 1,
+          biomedika: 1,
+          tradisional: null,
+        },
+        {
+          kecamatan: "Ponorogo",
+          perawat: 1331,
+          bidan: 533,
+          farmasi: 564,
+          kesmas: 14,
+          kesling: 23,
+          gizi: 52,
+          medis: 87,
+          psikologi: 4,
+          fisik: 74,
+          keteknisan: 87,
+          biomedika: 173,
+          tradisional: null,
+        },
+        {
+          kecamatan: "Babadan",
+          perawat: 29,
+          bidan: 28,
+          farmasi: 3,
+          kesmas: 3,
+          kesling: 3,
+          gizi: 1,
+          medis: 3,
+          psikologi: null,
+          fisik: null,
+          keteknisan: 3,
+          biomedika: 2,
+          tradisional: null,
+        },
+        {
+          kecamatan: "Jenangan",
+          perawat: 41,
+          bidan: 22,
+          farmasi: 4,
+          kesmas: 3,
+          kesling: 2,
+          gizi: 2,
+          medis: 2,
+          psikologi: null,
+          fisik: null,
+          keteknisan: 2,
+          biomedika: 3,
+          tradisional: null,
+        },
+        {
+          kecamatan: "Ngebel",
+          perawat: 17,
+          bidan: 12,
+          farmasi: 2,
+          kesmas: 1,
+          kesling: 2,
+          gizi: null,
+          medis: 2,
+          psikologi: null,
+          fisik: null,
+          keteknisan: 2,
+          biomedika: 1,
+          tradisional: null,
+        },
+        {
+          kecamatan: "Jumlah Total",
+          perawat: 1890,
+          bidan: 981,
+          farmasi: 2,
+          kesmas: 1,
+          kesling: 2,
+          gizi: 84,
+          medis: 123,
+          psikologi: null,
+          fisik: null,
+          keteknisan: 2,
+          biomedika: 1,
+          tradisional: null,
+        },
+      ];
+
+      // Data total kabupaten
+      const totalData = {
+        kecamatan: "TOTAL KABUPATEN",
+        perawat: 1890,
+        bidan: 981,
+        gizi: 84,
+        medis: 123,
+      };
+
+      // Fungsi untuk mengisi tabel data tenaga kesehatan
+      function populateHealthTable() {
+        const tableBody = document.getElementById("health-table-body");
+        tableBody.innerHTML = "";
+
+        // Tambahkan data per kecamatan
+        healthData2024.forEach((item) => {
+          const row = document.createElement("tr");
+
+          row.innerHTML = `
+                    <td><strong>${item.kecamatan}</strong></td>
+                    <td class="category-perawat">${item.perawat || "-"}</td>
+                    <td class="category-bidan">${item.bidan || "-"}</td>
+                    <td class="category-gizi">${item.gizi || "-"}</td>
+                    <td class="category-medis">${item.medis || "-"}</td>
+                `;
+
+          tableBody.appendChild(row);
+        });
+
+        // Tambahkan baris total di akhir
+        const totalRow = document.createElement("tr");
+        totalRow.style.background = "rgba(0, 255, 136, 0.1)";
+        totalRow.style.fontWeight = "600";
+        totalRow.style.borderTop = "2px solid rgba(0, 255, 136, 0.3)";
+
+        totalRow.innerHTML = `
+                <td><strong>${totalData.kecamatan}</strong></td>
+                <td class="category-perawat">${totalData.perawat.toLocaleString()}</td>
+                <td class="category-bidan">${totalData.bidan.toLocaleString()}</td>
+                <td class="category-farmasi">${totalData.farmasi.toLocaleString()}</td>
+                <td class="category-kesmas">${totalData.kesmas.toLocaleString()}</td>
+                <td>${totalData.kesling.toLocaleString()}</td>
+                <td class="category-gizi">${totalData.gizi.toLocaleString()}</td>
+                <td class="category-medis">${totalData.medis.toLocaleString()}</td>
+                <td>${totalData.psikologi.toLocaleString()}</td>
+                <td>${totalData.fisik.toLocaleString()}</td>
+                <td>${totalData.keteknisan.toLocaleString()}</td>
+                <td>${totalData.biomedika.toLocaleString()}</td>
+                <td>${totalData.tradisional || "-"}</td>
+            `;
+
+        tableBody.appendChild(totalRow);
+      }
+
+      // Fungsi untuk memperbarui statistik
+      function updateStats() {
+        document.getElementById("total-perawat").textContent =
+          totalData.perawat.toLocaleString();
+        document.getElementById("total-bidan").textContent =
+          totalData.bidan.toLocaleString();
+        document.getElementById("total-farmasi").textContent =
+          totalData.farmasi.toLocaleString();
+        document.getElementById("total-medis").textContent =
+          totalData.medis.toLocaleString();
+        document.getElementById("total-kesmas").textContent =
+          totalData.kesmas.toLocaleString();
+        document.getElementById("total-kesling").textContent =
+          totalData.kesling.toLocaleString();
+        document.getElementById("total-gizi").textContent =
+          totalData.gizi.toLocaleString();
+        document.getElementById("total-biomedika").textContent =
+          totalData.biomedika.toLocaleString();
+        document.getElementById("total-keteknisan").textContent =
+          totalData.keteknisan.toLocaleString();
+        document.getElementById("total-fisik").textContent =
+          totalData.fisik.toLocaleString();
+        document.getElementById("total-psikologi").textContent =
+          totalData.psikologi.toLocaleString();
+      }
+
+      // Initialize when page loads
+      document.addEventListener("DOMContentLoaded", function () {
+        // Inisialisasi data tenaga kesehatan
+        populateHealthTable();
+
+        // Perbarui statistik
+        updateStats();
+
+        // Setup untuk menangani jika peta tidak tersedia
+        const mapFrame = document.getElementById("map-frame");
+        mapFrame.addEventListener("error", function () {
+          console.log("Peta tidak dapat dimuat");
+        });
+
+        // Add sorting functionality to table headers
+        const tableHeaders = document.querySelectorAll("th");
+        tableHeaders.forEach((header, index) => {
+          header.style.cursor = "pointer";
+          header.title = "Klik untuk mengurutkan";
+          header.addEventListener("click", () => {
+            sortTable(index);
+          });
+        });
+      });
+
+      // Fungsi untuk sorting tabel
+      let currentSortColumn = -1;
+      let sortDirection = 1;
+
+      function sortTable(columnIndex) {
+        const tableBody = document.getElementById("health-table-body");
+        const rows = Array.from(tableBody.querySelectorAll("tr"));
+
+        // Jangan sort baris total (baris terakhir)
+        const totalRow = rows.pop(); // Hapus baris total dari array
+
+        // Reset sort direction jika kolom berbeda
+        if (currentSortColumn !== columnIndex) {
+          sortDirection = 1;
+          currentSortColumn = columnIndex;
+        } else {
+          sortDirection *= -1; // Toggle direction
+        }
+
+        rows.sort((a, b) => {
+          const cellA = a.querySelectorAll("td")[columnIndex]?.textContent;
+          const cellB = b.querySelectorAll("td")[columnIndex]?.textContent;
+
+          // Handle hyphen as zero
+          let valueA =
+            cellA === "-" || !cellA
+              ? 0
+              : parseInt(cellA.replace(/,/g, "")) || 0;
+          let valueB =
+            cellB === "-" || !cellB
+              ? 0
+              : parseInt(cellB.replace(/,/g, "")) || 0;
+
+          return (valueA - valueB) * sortDirection;
+        });
+
+        // Clear table
+        tableBody.innerHTML = "";
+
+        // Add sorted rows
+        rows.forEach((row) => tableBody.appendChild(row));
+
+        // Add total row at the end
+        if (totalRow) {
+          tableBody.appendChild(totalRow);
+        }
+
+        // Update sort indicator
+        updateSortIndicator(columnIndex);
+      }
+
+      function updateSortIndicator(columnIndex) {
+        // Remove previous indicators
+        document.querySelectorAll("th").forEach((th) => {
+          th.innerHTML = th.innerHTML.replace(" ↑", "").replace(" ↓", "");
+        });
+
+        // Add new indicator
+        const currentHeader = document.querySelectorAll("th")[columnIndex];
+        const indicator = sortDirection === 1 ? " ↑" : " ↓";
+        currentHeader.innerHTML += indicator;
+      }
+    </script>
+  </body>
+</html>
